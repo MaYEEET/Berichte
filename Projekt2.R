@@ -28,7 +28,7 @@ sd(datag1d1$KL)
 sd(datag2d1$KL)
 # 3.655335
 
-# install.packages("car")
+install.packages("car")
 library(car)
 
 # QQ-Plot mit Konfidenzintervallen fuer Gruppe 1, Durchgang 1
@@ -74,6 +74,7 @@ datad2 = subset(data, durchgang == 2)
 diff_KL <- datad2$KL - datad1$KL
 diff_B <- datad2$B - datad1$B
 
+
 # Shapiro-Wilk-Test fuer Normalverteilung der Differenzen in
 # Konzentrationsleistung und Bearbeitungszeit
 shapiro.test(diff_KL)
@@ -84,10 +85,12 @@ shapiro.test(diff_B)
 
 
 # Vergleich der Konzentrationsleistung zwischen Durchgang 1 und Durchgang 2
+t.test(diff_KL)
 t.test(datad1$KL, datad2$KL, paired = TRUE)
 # p-Wert: 4.066e-06 => KL deutlich hoeher im 2. Durchgang
 
 # Vergleich der Bearbeitungszeit zwischen Durchgang 1 und Durchgang 2
+t.test(diff_B)
 t.test(datad1$B, datad2$B, paired = TRUE)
 # p-Wert: 0.000142 => B deutlich kuerzer im 2. Durchgang
 
@@ -103,6 +106,37 @@ summary_stats <- data.frame(
 )
 summary_stats
 
+# Laden von ggplot2
+library(ggplot2)
+
+# Scatterplot für Konzentrationsleistung (Durchgang 1 vs. Durchgang 2)
+ggplot() +
+  geom_point(aes(x = datad1$KL, y = datad2$KL), color = "blue") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(x = "Konzentrationsleistung (Durchgang 1)",
+       y = "Konzentrationsleistung (Durchgang 2)") +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5),
+        axis.text = element_text(size = 20),
+        axis.title = element_text(size = 20)
+  )
+
+# Scatterplot für Bearbeitungszeit (Durchgang 1 vs. Durchgang 2)
+ggplot() +
+  geom_point(aes(x = datad1$B, y = datad2$B), color = "green") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(x = "Bearbeitungszeit (Durchgang 1)",
+       y = "Bearbeitungszeit (Durchgang 2)") +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5),
+        axis.text = element_text(size = 20),
+        axis.title = element_text(size = 20)
+  )
+
+
+
+
+# wahrscheinlich unnoetig:
 # Boxplot für Konzentrationsleistung
 boxplot(datad1$KL, datad2$KL,
         names = c("Durchgang 1", "Durchgang 2"),
@@ -140,8 +174,6 @@ ggplot(data, aes(x = as.factor(durchgang), y = B)) +
 # Effektstärke für Konzentrationsleistung und Bearbeitungszeit
 install.packages("effsize")
 library(effsize)
-cohen.d(diff_KL)  # Für Konzentrationsleistung
-cohen.d(diff_B)   # Für Bearbeitungszeit
 
 # Cohen's d für Konzentrationsleistung zwischen Durchgang 1 und Durchgang 2
 cohen.d(datad1$KL, datad2$KL, paired = TRUE)
@@ -194,8 +226,10 @@ diff_g2_B = datag2d2$B - datag2d1$B
 data.frame(
   Gruppe = rep(c("GU-GU", "UG-GU"), each = 2),
   Variable = rep(c("Konzentrationsleistung", "Bearbeitungszeit"), times = 2),
-  Mean = c(mean(diff_g1_KL), mean(diff_g1_B), mean(diff_g2_KL), mean(diff_g2_B)),
-  Median = c(median(diff_g1_KL), median(diff_g1_B), median(diff_g2_KL), median(diff_g2_B)),
+  Mean = c(mean(diff_g1_KL), mean(diff_g1_B), mean(diff_g2_KL), 
+           mean(diff_g2_B)),
+  Median = c(median(diff_g1_KL), median(diff_g1_B), median(diff_g2_KL),
+             median(diff_g2_B)),
   SD = c(sd(diff_g1_KL), sd(diff_g1_B), sd(diff_g2_KL), sd(diff_g2_B))
 )
 # Konzentrationsleistung:
@@ -288,5 +322,4 @@ ggplot(data_diff, aes(x = Gruppe, y = Diff_B)) +
 # Berechnung der Korrelation zwischen den Differenzen in Konzentrationsleistung
 # und Bearbeitungszeit
 cor(data_diff$Diff_KL, data_diff$Diff_B)
-
 
